@@ -1,10 +1,8 @@
 name: Test PostgreSQL Versions
 
 on:
-  workflow_dispatch: ~
+  workflow_dispatch:
   push:
-    branches:
-        - master
 
 jobs:
   test:
@@ -12,11 +10,11 @@ jobs:
 
     strategy:
       matrix:
-        postgres-version: [13, 14, 15, 16, 17]
+        version: [13, 14, 15, 16, 17]
 
     services:
       postgres:
-        image: postgres:${{ matrix.postgres-version }}-alpine
+        image: postgres:${{ matrix.version }}-alpine
         env:
           POSTGRES_DB: symfony
           POSTGRES_USER: symfony
@@ -54,7 +52,7 @@ jobs:
     - name: Setup environment
       run: |
         cp .env .env.local
-        echo "DATABASE_URL=postgresql://symfony:postgres@127.0.0.1:5432/symfony?serverVersion=${{ matrix.postgres-version }}&charset=utf8" >> .env.local
+        echo "DATABASE_URL=postgresql://symfony:postgres@127.0.0.1:5432/symfony?serverVersion=${{ matrix.version }}&charset=utf8" >> .env.local
         echo "LOCK_DSN=postgresql://symfony:postgres@127.0.0.1:5432/symfony" >> .env.local
 
     - name: Create database
@@ -67,7 +65,7 @@ jobs:
 
     - name: Test lock functionality
       run: |
-        echo "Testing PostgreSQL ${{ matrix.postgres-version }}"
+        echo "Testing PostgreSQL ${{ matrix.version }}"
         echo "First run - should acquire lock:"
         php bin/console app:create-lock -vvv
         echo ""
