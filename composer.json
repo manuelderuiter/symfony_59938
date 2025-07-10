@@ -14,7 +14,7 @@
         "symfony/dotenv": "6.4.*",
         "symfony/flex": "^2.8.1",
         "symfony/framework-bundle": "6.4.*",
-        "symfony/lock": "6.4.*",
+        "symfony/lock": "dev-lock-59938",
         "symfony/runtime": "6.4.*",
         "symfony/serializer": "6.4.*",
         "symfony/yaml": "6.4.*"
@@ -68,5 +68,11 @@
             "allow-contrib": false,
             "require": "6.4.*"
         }
-    }
+    },
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/manuelderuiter/symfony-lock.git"
+        }
+    ]
 }

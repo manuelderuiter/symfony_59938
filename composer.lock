@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0702664d8d55eee02e9d698b7b80a777",
+    "content-hash": "ed696fb3220fb07e93c47f511366bff8",
     "packages": [
         {
             "name": "doctrine/collections",
@@ -2769,17 +2769,11 @@
         },
         {
             "name": "symfony/lock",
-            "version": "v6.4.13",
+            "version": "dev-lock-59938",
             "source": {
                 "type": "git",
-                "url": "https://github.com/symfony/lock.git",
-                "reference": "a69c3dd151ab7e14925f119164cfdf65d55392a4"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/lock/zipball/a69c3dd151ab7e14925f119164cfdf65d55392a4",
-                "reference": "a69c3dd151ab7e14925f119164cfdf65d55392a4",
-                "shasum": ""
+                "url": "https://github.com/manuelderuiter/symfony-lock.git",
+                "reference": "f86a1bb2fe9272c888798038aae5d69d09a2b3ba"
             },
             "require": {
                 "php": ">=8.1",
@@ -2803,7 +2797,6 @@
                     "/Tests/"
                 ]
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -2827,24 +2820,7 @@
                 "redlock",
                 "semaphore"
             ],
-            "support": {
-                "source": "https://github.com/symfony/lock/tree/v6.4.13"
-            },
-            "funding": [
-                {
-                    "url": "https://symfony.com/sponsor",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://github.com/fabpot",
-                    "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
-                    "type": "tidelift"
-                }
-            ],
-            "time": "2024-10-25T15:19:46+00:00"
+            "time": "2025-07-10T06:17:04+00:00"
         },
         {
             "name": "symfony/polyfill-intl-grapheme",
@@ -3967,7 +3943,9 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "symfony/lock": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
