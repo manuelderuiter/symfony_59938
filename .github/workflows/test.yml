@@ -1,0 +1,107 @@
+name: Test PostgreSQL Versions
+
+on:
+  workflow_dispatch: ~
+  push:
+    branches:
+        - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        postgres-version: [13, 14, 15, 16, 17]
+
+    services:
+      postgres:
+        image: postgres:${{ matrix.postgres-version }}-alpine
+        env:
+          POSTGRES_DB: symfony
+          POSTGRES_USER: symfony
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: pdo, pdo_pgsql, pgsql
+        coverage: none
+
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v3
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+
+    - name: Setup environment
+      run: |
+        cp .env .env.local
+        echo "DATABASE_URL=postgresql://symfony:postgres@127.0.0.1:5432/symfony?serverVersion=${{ matrix.postgres-version }}&charset=utf8" >> .env.local
+        echo "LOCK_DSN=postgresql://symfony:postgres@127.0.0.1:5432/symfony" >> .env.local
+
+    - name: Create database
+      run: |
+        php bin/console doctrine:database:create --if-not-exists
+
+    - name: Clean up any existing lock files
+      run: |
+        rm -f src/Command/lock.txt
+
+    - name: Test lock functionality
+      run: |
+        echo "Testing PostgreSQL ${{ matrix.postgres-version }}"
+        echo "First run - should acquire lock:"
+        php bin/console app:create-lock -vvv
+        echo ""
+        echo "Second run - should refresh existing lock:"
+        OUTPUT=$(php bin/console app:create-lock -vvv 2>&1)
+        echo "$OUTPUT"
+
+        if echo "$OUTPUT" | grep -q "\.3777777"; then
+          echo "✓ Output contains '.3777777' as expected"
+        else
+          echo "✗ Output does not contain '.3777777'"
+          echo "Expected to find '.3777777' in the output"
+          exit 1
+        fi
+
+    - name: Verify lock functionality worked
+      run: |
+        if [ -f "src/Command/lock.txt" ]; then
+          echo "✓ Lock file was created successfully"
+        else
+          echo "✗ Lock file was not created"
+          exit 1
+        fi
+
+    - name: Test lock persistence across runs
+      run: |
+        echo "Third run - testing lock persistence:"
+        OUTPUT=$(php bin/console app:create-lock -vvv 2>&1)
+        echo "$OUTPUT"
+
+        if echo "$OUTPUT" | grep -q "\.3777777"; then
+          echo "✓ Persistence test output contains '.3777777' as expected"
+        else
+          echo "✗ Persistence test output does not contain '.3777777'"
+          echo "Expected to find '.3777777' in the output"
+          exit 1
+        fi
