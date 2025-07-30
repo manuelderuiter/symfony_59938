@@ -10,22 +10,145 @@ jobs:
 
     strategy:
       matrix:
-        version: [13, 14, 15, 16, 17]
+        include:
+          # PostgreSQL versions
+          - db: postgresql-13
+            image: postgres:13-alpine
+            port: 5432
+            database_url: "postgresql://symfony:postgres@127.0.0.1:5432/symfony?serverVersion=13&charset=utf8"
+            lock_dsn: "postgresql://symfony:postgres@127.0.0.1:5432/symfony"
+            php_extensions: "pdo, pdo_pgsql, pgsql"
+            env_vars:
+              POSTGRES_DB: symfony
+              POSTGRES_USER: symfony
+              POSTGRES_PASSWORD: postgres
+            health_cmd: "pg_isready"
+
+          - db: postgresql-14
+            image: postgres:14-alpine
+            port: 5432
+            database_url: "postgresql://symfony:postgres@127.0.0.1:5432/symfony?serverVersion=14&charset=utf8"
+            lock_dsn: "postgresql://symfony:postgres@127.0.0.1:5432/symfony"
+            php_extensions: "pdo, pdo_pgsql, pgsql"
+            env_vars:
+              POSTGRES_DB: symfony
+              POSTGRES_USER: symfony
+              POSTGRES_PASSWORD: postgres
+            health_cmd: "pg_isready"
+
+          - db: postgresql-15
+            image: postgres:15-alpine
+            port: 5432
+            database_url: "postgresql://symfony:postgres@127.0.0.1:5432/symfony?serverVersion=15&charset=utf8"
+            lock_dsn: "postgresql://symfony:postgres@127.0.0.1:5432/symfony"
+            php_extensions: "pdo, pdo_pgsql, pgsql"
+            env_vars:
+              POSTGRES_DB: symfony
+              POSTGRES_USER: symfony
+              POSTGRES_PASSWORD: postgres
+            health_cmd: "pg_isready"
+
+          - db: postgresql-16
+            image: postgres:16-alpine
+            port: 5432
+            database_url: "postgresql://symfony:postgres@127.0.0.1:5432/symfony?serverVersion=16&charset=utf8"
+            lock_dsn: "postgresql://symfony:postgres@127.0.0.1:5432/symfony"
+            php_extensions: "pdo, pdo_pgsql, pgsql"
+            env_vars:
+              POSTGRES_DB: symfony
+              POSTGRES_USER: symfony
+              POSTGRES_PASSWORD: postgres
+            health_cmd: "pg_isready"
+
+          - db: postgresql-17
+            image: postgres:17-alpine
+            port: 5432
+            database_url: "postgresql://symfony:postgres@127.0.0.1:5432/symfony?serverVersion=17&charset=utf8"
+            lock_dsn: "postgresql://symfony:postgres@127.0.0.1:5432/symfony"
+            php_extensions: "pdo, pdo_pgsql, pgsql"
+            env_vars:
+              POSTGRES_DB: symfony
+              POSTGRES_USER: symfony
+              POSTGRES_PASSWORD: postgres
+            health_cmd: "pg_isready"
+
+          # MySQL versions
+          - db: mysql-5.7
+            image: mysql:5.7
+            port: 3306
+            database_url: "mysql://symfony:symfony@127.0.0.1:3306/symfony?serverVersion=5.7&charset=utf8mb4"
+            lock_dsn: "mysql://symfony:symfony@127.0.0.1:3306/symfony"
+            php_extensions: "pdo, pdo_mysql, mysql"
+            env_vars:
+              MYSQL_ROOT_PASSWORD: root
+              MYSQL_DATABASE: symfony
+              MYSQL_USER: symfony
+              MYSQL_PASSWORD: symfony
+            health_cmd: "mysqladmin ping -h localhost"
+
+          - db: mysql-8.0
+            image: mysql:8.0
+            port: 3306
+            database_url: "mysql://symfony:symfony@127.0.0.1:3306/symfony?serverVersion=8.0&charset=utf8mb4"
+            lock_dsn: "mysql://symfony:symfony@127.0.0.1:3306/symfony"
+            php_extensions: "pdo, pdo_mysql, mysql"
+            env_vars:
+              MYSQL_ROOT_PASSWORD: root
+              MYSQL_DATABASE: symfony
+              MYSQL_USER: symfony
+              MYSQL_PASSWORD: symfony
+            health_cmd: "mysqladmin ping -h localhost"
+
+          - db: mysql-8.4
+            image: mysql:8.4
+            port: 3306
+            database_url: "mysql://symfony:symfony@127.0.0.1:3306/symfony?serverVersion=8.4&charset=utf8mb4"
+            lock_dsn: "mysql://symfony:symfony@127.0.0.1:3306/symfony"
+            php_extensions: "pdo, pdo_mysql, mysql"
+            env_vars:
+              MYSQL_ROOT_PASSWORD: root
+              MYSQL_DATABASE: symfony
+              MYSQL_USER: symfony
+              MYSQL_PASSWORD: symfony
+            health_cmd: "mysqladmin ping -h localhost"
+
+          # MSSQL
+          - db: mssql
+            image: mcr.microsoft.com/mssql/server:2022-latest
+            port: 1433
+            database_url: "sqlsrv://sa:YourStrong@Passw0rd@127.0.0.1:1433/symfony?serverVersion=2022&charset=utf8"
+            lock_dsn: "sqlsrv://sa:YourStrong@Passw0rd@127.0.0.1:1433/symfony"
+            php_extensions: "pdo, pdo_sqlsrv, sqlsrv"
+            env_vars:
+              SA_PASSWORD: "YourStrong@Passw0rd"
+              ACCEPT_EULA: "Y"
+              MSSQL_PID: "Express"
+            health_cmd: "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong@Passw0rd -Q 'SELECT 1'"
+
+          # Oracle
+          - db: oracle
+            image: gvenzl/oracle-xe:21-slim
+            port: 1521
+            database_url: "oci8://symfony:symfony_password@127.0.0.1:1521/symfony?serverVersion=21&charset=utf8"
+            lock_dsn: "oci8://symfony:symfony_password@127.0.0.1:1521/symfony"
+            php_extensions: "pdo, pdo_oci, oci8"
+            env_vars:
+              ORACLE_PASSWORD: oraclemagic
+              APP_USER: symfony
+              APP_USER_PASSWORD: symfony_password
+            health_cmd: "sqlplus -s symfony/symfony@//localhost:1521/symfony <<< 'SELECT 1 FROM dual;'"
 
     services:
-      postgres:
-        image: postgres:${{ matrix.version }}-alpine
-        env:
-          POSTGRES_DB: symfony
-          POSTGRES_USER: symfony
-          POSTGRES_PASSWORD: postgres
+      database:
+        image: ${{ matrix.image }}
+        env: ${{ matrix.env_vars }}
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "${{ matrix.health_cmd }}"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
         ports:
-          - 5432:5432
+          - ${{ matrix.port }}:${{ matrix.port }}
 
     steps:
     - uses: actions/checkout@v4
@@ -34,7 +157,7 @@ jobs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: '8.2'
-        extensions: pdo, pdo_pgsql, pgsql
+        extensions: ${{ matrix.php_extensions }}
         coverage: none
 
     - name: Cache Composer packages
@@ -52,8 +175,8 @@ jobs:
     - name: Setup environment
       run: |
         cp .env .env.local
-        echo "DATABASE_URL=postgresql://symfony:postgres@127.0.0.1:5432/symfony?serverVersion=${{ matrix.version }}&charset=utf8" >> .env.local
-        echo "LOCK_DSN=postgresql://symfony:postgres@127.0.0.1:5432/symfony" >> .env.local
+        echo "DATABASE_URL=${{ matrix.database_url }}" >> .env.local
+        echo "LOCK_DSN=${{ matrix.lock_dsn }}" >> .env.local
 
     - name: Create database
       run: |
